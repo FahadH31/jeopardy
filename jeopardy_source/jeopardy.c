@@ -5,6 +5,7 @@
  * All rights reserved.
  *
  */
+// jeopardy.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,67 +14,72 @@
 #include "players.h"
 #include "jeopardy.h"
 
-// Put macros or constants here using #define
 #define BUFFER_LEN 256
 #define NUM_PLAYERS 4
 
-// Put global environment variables here
-
-// Processes the answer from the user containing what is or who is and tokenizes it to retrieve the answer.
 void tokenize(char *input, char **tokens);
-
-// Displays the game results for each player, their name and final score, ranked from first to last place
 void show_results(player *players, int num_players);
 
-
-int main(int argc, char *argv[])
-{
-    // An array of 4 players, may need to be a pointer if you want it set dynamically
+int main(int argc, char *argv[]) {
     player players[NUM_PLAYERS];
-    
-    // Input buffer and and commands
     char buffer[BUFFER_LEN] = { 0 };
 
-    // Display the game introduction and initialize the questions
     initialize_game();
-	int count = 0;
-    // Prompt for players names
-	while (count != NUM_PLAYERS) {
-		if (count == 0 ) {
-			char str[];
-		printf("What is the current player name: %d", i);
-		scanf ("%16s", str);
-		strcpy(players[i], str);
-		}
-		else if (count == 1) {
-			char str2[];
-			printf("What is the current player name: %d", i);
-			scanf (players[i], str2);
-		}
-		else if (count == 2){
-			char str3[];
-			printf("What is the current player name: %d", i);
-			scanf(players[i], str3);
-		}
-		else if (count == 3){
-			char str4[];
-			printf("What is the current player name: %d", i);
-			scanf(players[i], str4);
-		}
-		else{
-		}
 
-		count++;
-	}	
-    // initialize each of the players in the array
-
-    // Perform an infinite loop getting command input from users until game ends
-    while (fgets(buffer, BUFFER_LEN, stdin) != NULL) {
-        // Call functions from the questions and players source files
-
-        // Execute the game until all questions are answered
-
-        // Display the final results and exit
+    printf("Enter the names of the four players:\n");
+    for (int i = 0; i < NUM_PLAYERS; ++i) {
+        printf("Player %d: ", i + 1);
+        fgets(buffer, BUFFER_LEN, stdin);
+        buffer[strcspn(buffer, "\n")] = '\0'; // remove newline character
+        strcpy(players[i].name, buffer);
+        players[i].score = 0;
     }
+
+    while (1) {
+        display_categories();
+        int remaining_questions = NUM_QUESTIONS;
+        while (remaining_questions > 0) {
+            char player_name[BUFFER_LEN];
+            printf("Enter the name of the player to select a question: ");
+            fgets(buffer, BUFFER_LEN, stdin);
+            buffer[strcspn(buffer, "\n")] = '\0'; // remove newline character
+            strcpy(player_name, buffer);
+
+            if (!player_exists(players, NUM_PLAYERS, player_name)) {
+                printf("Invalid player name. Please try again.\n");
+                continue;
+            }
+
+            char category[MAX_LEN];
+            int value;
+            printf("Enter the category and dollar amount of the question (e.g., programming 100): ");
+            fgets(buffer, BUFFER_LEN, stdin);
+            buffer[strcspn(buffer, "\n")] = '\0'; // remove newline character
+            sscanf(buffer, "%s %d", category, &value);
+
+            if (already_answered(category, value)) {
+                printf("Question already answered. Please select another.\n\n");
+                continue;
+            }
+
+            display_question(category, value);
+
+            printf("Enter your answer (start with 'What is', followed by your answer in lowercase): ");
+            fgets(buffer, BUFFER_LEN, stdin);
+            buffer[strcspn(buffer, "\n")] = '\0'; // remove newline character
+
+            if (valid_answer(category, value, buffer)) {
+                printf("Correct answer!\n\n");
+                update_score(players, NUM_PLAYERS, player_name, value);
+            } else {
+                printf("Incorrect answer! The correct answer is: %s\n", questions[value - 100].answer);
+            }
+            remaining_questions--;
+        }
+
+        show_results(players, NUM_PLAYERS);
+        break; // exit the loop after one round for simplicity
+    }
+
     return EXIT_SUCCESS;
 }
