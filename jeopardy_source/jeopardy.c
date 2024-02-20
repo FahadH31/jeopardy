@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
                 printf("Correct answer!\n\n");
                 update_score(players, NUM_PLAYERS, player_name, value);
             } else {
-                printf("Incorrect answer! The correct answer is: %s\n", questions[value - 100].answer);
+                printf("Incorrect answer!\n\n");
             }
             remaining_questions--;
         }
